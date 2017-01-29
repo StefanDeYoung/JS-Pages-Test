@@ -1,0 +1,92 @@
+/* Maze Generator
+
+This follows explicitly the coding challenge videos by The Coding Train on Youtube about a depth-first recursive backtracking maze generation algorithm
+
+Tutorial:  https://www.youtube.com/watch?v=HyK_Q5rrcr4
+Algorithm: https://en.wikipedia.org/wiki/Maze_generation_algorithm#Recursive_backtracker
+
+Stefan De Young
+January 2017
+*/
+
+var cols, rows;
+var w = 20;
+var grid = []; //NB this is a 1D array because jscript doensn't support 2D arrays natively
+
+var current;
+
+var stack = [];
+
+function setup() {
+    createCanvas(800, 400);
+	cols = floor(width/w);
+	rows = floor(height/w);
+	
+	//frameRate(5);
+	
+	for (var j = 0; j < rows; j++){
+		for (var i = 0; i < cols; i++){			
+			grid.push(new Cell(i,j));
+		}
+	}
+	
+	current = grid[0];
+}
+
+function draw() {
+    background(51);
+	
+	for (var k = 0; k < grid.length; k++){
+		grid[k].show();
+	}
+	
+	current.visited = true;
+	current.highlight();
+	
+	//STEP 1
+	var next = current.checkNeighbours();
+	if (next){
+		next.visited = true;
+		
+		//STEP 3
+		removeWalls(current, next);
+		
+		//STEP 2
+		stack.push(current);
+		
+		//STEP 4
+		current = next;
+	} else if (stack.length > 0) {
+		current = stack.pop();
+	}	
+}
+
+function index(i, j){
+	//Maps 2D index i,j onto 1D index k
+	if (i < 0 || j < 0 || i > cols-1 || j > rows-1){
+		return -1;
+	}
+	
+	return i + j * cols;
+}
+
+function removeWalls(a,b){
+	var x = a.i - b.i;	
+	// 1 if a is to the right of b, -1 if b is to the right of a, 0 if they're the same cell
+	if (x === 1){
+		a.walls[3] = false;
+		b.walls[1] = false;
+	} else if (x === -1){
+		a.walls[1] = false;
+		b.walls[3] = false;
+	}
+	
+	var y = a.j - b.j;
+	if (y === 1){
+		a.walls[0] = false;
+		b.walls[2] = false;
+	} else if (y === -1){
+		a.walls[2] = false;
+		b.walls[0] = false;
+	}
+}
